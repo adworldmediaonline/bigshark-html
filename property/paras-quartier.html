@@ -3306,12 +3306,7 @@ A super luxurious landmark on the scenic Gwal Pahari Road, Paras Quartier offers
             <i class="fa fa-commenting" aria-hidden="true"></i>
         </div>
 
-          <div class="form-group">
-            <img src="../captcha.html" width="130" />
-           <input type="text" required  id="captcha" placeholder="Enter code displayed above" name="captcha" class="form-control txtreq numeric">
-
-
-          </div>
+          <!-- CAPTCHA removed - no longer required -->
     </div> <!-- modal-body -->
 
     <div class="modal-footer">
@@ -3991,6 +3986,312 @@ alert("Geocoder failed due to: " + status);
 
         return true; // Form submitted if all validations pass
     }
+</script>
+
+<!-- Modal Form Handler (unique_enquiry) - Enquire Now Modal -->
+<script type="text/javascript">
+/**
+ * Modal Form Handler for "Enquire Now" form
+ * Handles form submissions for unique_enquiry modal form
+ * Uses FormSubmit.co - FREE, NO SIGNUP REQUIRED, NO API KEYS NEEDED
+ */
+(function() {
+    'use strict';
+
+    // Configuration for modal form
+    var MODAL_FORM_CONFIG = {
+        enabled: true,
+        recipientEmail: 'info.bigshark@gmail.com', // Recipient email address
+        formId: 'unique_enquiry', // Modal form ID
+        showSuccessMessage: true,
+        showErrorMessage: true,
+        successMessage: 'Thank you! Your enquiry has been sent successfully. We will get back to you soon.',
+        errorMessage: 'Sorry, there was an error sending your enquiry. Please try again or contact us directly.',
+        formSubmitEndpoint: 'https://formsubmit.co/ajax/',
+        closeModalOnSuccess: true // Close modal after successful submission
+    };
+
+    // Only proceed if handler is enabled
+    if (!MODAL_FORM_CONFIG.enabled) {
+        return;
+    }
+
+    // Wait for DOM to be ready
+    function initModalFormHandler() {
+        var form = document.getElementById(MODAL_FORM_CONFIG.formId);
+
+        if (!form) {
+            console.warn('Modal form with ID "' + MODAL_FORM_CONFIG.formId + '" not found.');
+            return;
+        }
+
+        // Remove existing onsubmit handler
+        form.onsubmit = null;
+
+        // Add event listener for form submission
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Call existing validation function if it exists
+            if (typeof validateAndSubmit === 'function') {
+                // We'll handle validation ourselves, but check if it would fail
+                var name = document.getElementById('textfield1');
+                var email = document.getElementById('textfield2');
+                var phone = document.getElementById('phone_popup');
+
+                if (name && !name.value.trim()) {
+                    alert('Please enter your name.');
+                    name.focus();
+                    return false;
+                }
+                if (email && (!email.value.trim() || !email.value.includes('@'))) {
+                    alert('Please enter a valid email address.');
+                    email.focus();
+                    return false;
+                }
+                if (phone && (!phone.value.trim() || phone.value.length < 10)) {
+                    alert('Please enter a valid phone number.');
+                    phone.focus();
+                    return false;
+                }
+            }
+
+            // Call gtag conversion tracking if it exists
+            if (typeof gtag_form_conversion === 'function') {
+                gtag_form_conversion();
+            }
+
+            // Validate form
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return false;
+            }
+
+            // Collect form data
+            var formData = collectModalFormData(form);
+
+            // Show loading state
+            var submitButton = form.querySelector('input[type="submit"], button[type="submit"]');
+            var originalButtonValue = submitButton ? submitButton.value : '';
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.value = 'Sending...';
+            }
+
+            // Send form data
+            sendModalFormData(formData, function(success, response) {
+                // Restore button state
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.value = originalButtonValue;
+                }
+
+                if (success) {
+                    // Show success message
+                    if (MODAL_FORM_CONFIG.showSuccessMessage) {
+                        showModalMessage(MODAL_FORM_CONFIG.successMessage, 'success');
+                    }
+
+                    // Reset form
+                    form.reset();
+
+                    // Close modal after delay if configured
+                    if (MODAL_FORM_CONFIG.closeModalOnSuccess) {
+                        setTimeout(function() {
+                            var modal = document.getElementById('myModal');
+                            if (modal && typeof jQuery !== 'undefined') {
+                                jQuery(modal).modal('hide');
+                            } else if (modal) {
+                                modal.style.display = 'none';
+                                document.body.classList.remove('modal-open');
+                            }
+                        }, 2000);
+                    }
+                } else {
+                    // Show error message
+                    if (MODAL_FORM_CONFIG.showErrorMessage) {
+                        var errorMsg = MODAL_FORM_CONFIG.errorMessage;
+                        if (response && response.message) {
+                            errorMsg = response.message;
+                        }
+                        showModalMessage(errorMsg, 'error');
+                    }
+                }
+            });
+
+            return false;
+        });
+    }
+
+    /**
+     * Collect all form data into an object
+     */
+    function collectModalFormData(form) {
+        var formData = {};
+        var formElements = form.querySelectorAll('input, textarea, select');
+
+        for (var i = 0; i < formElements.length; i++) {
+            var element = formElements[i];
+            var name = element.name;
+            var type = element.type;
+            var value = element.value;
+
+            // Skip submit buttons, hidden tokens, and file inputs
+            if (type === 'submit' || type === 'button' || type === 'file' || name === '_token') {
+                continue;
+            }
+
+            // Handle checkboxes and radio buttons
+            if ((type === 'checkbox' || type === 'radio') && !element.checked) {
+                continue;
+            }
+
+            // Add to formData
+            if (name && value !== '') {
+                formData[name] = value;
+            }
+        }
+
+        return formData;
+    }
+
+    /**
+     * Send form data using FormSubmit.co
+     */
+    function sendModalFormData(formData, callback) {
+        // Prepare data for FormSubmit.co
+        var submitData = {
+            name: formData.name || 'Website Visitor',
+            email: formData.email || 'noreply@bigsharkdeveloper.com',
+            phone: formData.phone || 'Not provided',
+            project: formData.project || 'Property Inquiry',
+            subject: formData.subject || 'New Enquiry: ' + (formData.project || 'Property Inquiry'),
+            message: formData.message || 'No message provided',
+            type: formData.type || 'Enquiry',
+            _to: MODAL_FORM_CONFIG.recipientEmail,
+            _subject: 'New Enquiry: ' + (formData.project || 'Property Inquiry'),
+            _template: 'box'
+        };
+
+        // Use jQuery if available, otherwise Fetch API
+        if (typeof jQuery !== 'undefined') {
+            jQuery.ajax({
+                url: MODAL_FORM_CONFIG.formSubmitEndpoint + MODAL_FORM_CONFIG.recipientEmail,
+                method: 'POST',
+                data: submitData,
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        callback(true, {
+                            message: 'Email sent successfully'
+                        });
+                    } else {
+                        callback(false, {
+                            message: response.message || MODAL_FORM_CONFIG.errorMessage
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Modal form submission error:', error);
+                    callback(false, {
+                        message: 'Network error. Please check your connection and try again.'
+                    });
+                }
+            });
+        } else {
+            var formDataObj = new FormData();
+            for (var key in submitData) {
+                if (submitData.hasOwnProperty(key)) {
+                    formDataObj.append(key, submitData[key]);
+                }
+            }
+
+            fetch(MODAL_FORM_CONFIG.formSubmitEndpoint + MODAL_FORM_CONFIG.recipientEmail, {
+                method: 'POST',
+                body: formDataObj,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    callback(true, {
+                        message: 'Email sent successfully'
+                    });
+                } else {
+                    callback(false, {
+                        message: data.message || MODAL_FORM_CONFIG.errorMessage
+                    });
+                }
+            })
+            .catch(function(error) {
+                console.error('Modal form submission error:', error);
+                callback(false, {
+                    message: 'Network error. Please check your connection and try again.'
+                });
+            });
+        }
+    }
+
+    /**
+     * Show success/error message in modal
+     */
+    function showModalMessage(message, type) {
+        // Remove any existing messages
+        var existingMessage = document.querySelector('.modal-form-message');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+
+        // Create message element
+        var messageDiv = document.createElement('div');
+        messageDiv.className = 'modal-form-message modal-form-' + type;
+        messageDiv.style.cssText = 'padding: 15px; margin: 15px 0; border-radius: 4px; font-weight: 500;';
+
+        if (type === 'success') {
+            messageDiv.style.backgroundColor = '#d4edda';
+            messageDiv.style.color = '#155724';
+            messageDiv.style.border = '1px solid #c3e6cb';
+        } else {
+            messageDiv.style.backgroundColor = '#f8d7da';
+            messageDiv.style.color = '#721c24';
+            messageDiv.style.border = '1px solid #f5c6cb';
+        }
+
+        messageDiv.textContent = message;
+
+        // Insert message in modal body
+        var form = document.getElementById(MODAL_FORM_CONFIG.formId);
+        var modalBody = form ? form.querySelector('.modal-body') : null;
+        if (modalBody) {
+            modalBody.insertBefore(messageDiv, modalBody.firstChild);
+
+            // Auto-remove message after 5 seconds
+            setTimeout(function() {
+                if (messageDiv.parentNode) {
+                    messageDiv.style.transition = 'opacity 0.5s';
+                    messageDiv.style.opacity = '0';
+                    setTimeout(function() {
+                        if (messageDiv.parentNode) {
+                            messageDiv.remove();
+                        }
+                    }, 500);
+                }
+            }, 5000);
+        }
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initModalFormHandler);
+    } else {
+        initModalFormHandler();
+    }
+})();
 </script>
 <!--main js file end-->
 </body>
